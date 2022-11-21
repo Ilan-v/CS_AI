@@ -14,7 +14,7 @@ def create_vectorized_data(data_dir):
     ember.create_vectorized_features(data_dir, 1)
     _ = ember.create_metadata(data_dir)
 
-def create_train_data(imports_dir, exports_dir):
+def create_train_data(imports_dir, processed_dir):
     """
     Create the tabular data for analysis.
 
@@ -31,16 +31,40 @@ def create_train_data(imports_dir, exports_dir):
         # flatten general data, and save the dataframe with the metadata
         df_general = pd.concat([df.drop(['general'], axis=1)[metadata_columns], df['general'].apply(pd.Series)], axis=1)
         # save dataframe to pickle
-        df_general.to_pickle(f'{exports_dir}/train_features_{i+1}.pkl')
+        df_general.to_pickle(f'{processed_dir}/train_features_{i+1}.pkl')
 
+def concat_train_data(data_dir):
+    """
+    Concatenate the tabular data for analysis.
 
-def open_file(file_path):
-    df = pd.read_json(file_path, lines=True)
-    return df
+    Args:
+        data_dir (str): The directory to pull the data from.
+    """
+    # create list of data files paths
+    files = [f'{data_dir}/train_features_{i}.pkl' for i in range(1, 6)]
+    # run through the files and create the dataframe (with tqdm for progress)
+    df = pd.concat([pd.read_pickle(f) for f in tqdm(files)])
+    # save dataframe to pickle
+    df.to_pickle(f'{data_dir}/train.pkl')
+
+def build_train_data(imports_dir,processed_dir):
+    """
+    Build the tabular training data for analysis.
+
+    Args:
+        imports_dir (str): The directory to pull the data from.
+        processed_dir (str): The directory to save the data files to.
+    """
+    # create tabular data
+    create_train_data(imports_dir, processed_dir)
+    # concatenate tabular data
+    concat_train_data(processed_dir)
+
 
 if __name__ == '__main__':
     # create the tabular data
     data_dir = os.path.join(os.getcwd(),'HW1\\data')
     processed_dir = os.path.join(data_dir,'processed')
     create_train_data(data_dir, processed_dir)
+    concat_train_data(processed_dir)
     
