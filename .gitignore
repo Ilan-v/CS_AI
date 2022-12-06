@@ -1,4 +1,5 @@
 HW1/data/
 .vscode/
+.idea/
 HW1/ember/__pycache__/
 *.pyc

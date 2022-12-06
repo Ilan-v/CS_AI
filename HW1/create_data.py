@@ -30,8 +30,12 @@ def create_train_data(imports_dir, processed_dir):
         df = pd.read_json(files[i], lines=True)
         # flatten general data, and save the dataframe with the metadata
         df_general = pd.concat([df.drop(['general'], axis=1)[metadata_columns], df['general'].apply(pd.Series)], axis=1)
-        # save dataframe to pickle
-        df_general.to_pickle(f'{processed_dir}/train_features_{i+1}.pkl')
+        # flatten strings data
+        df_strings = pd.concat([df_general, df['strings'].apply(pd.Series)], axis=1)
+        # remove printabledist column
+        df_strings = df_strings.drop(['printabledist'], axis=1)
+        # save dataframe to parquet
+        df_strings.to_parquet(f'{processed_dir}/train_features_{i+1}.parquet')
 
 def concat_train_data(data_dir):
     """
@@ -41,11 +45,11 @@ def concat_train_data(data_dir):
         data_dir (str): The directory to pull the data from.
     """
     # create list of data files paths
-    files = [f'{data_dir}/train_features_{i}.pkl' for i in range(1, 6)]
+    files = [f'{data_dir}/train_features_{i}.parquet' for i in range(1, 6)]
     # run through the files and create the dataframe (with tqdm for progress)
-    df = pd.concat([pd.read_pickle(f) for f in tqdm(files)])
+    df = pd.concat([pd.read_parquet(f) for f in tqdm(files)])
     # save dataframe to pickle
-    df.to_pickle(f'{data_dir}/train.pkl')
+    df.to_parquet(f'{data_dir}/train.parquet')
 
 def build_train_data(imports_dir,processed_dir):
     """
