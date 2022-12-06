@@ -3,6 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 import pickle
 import os
+tqdm.pandas()
 
 def create_vectorized_data(data_dir):
     """
@@ -26,12 +27,15 @@ def create_train_data(imports_dir, processed_dir):
     files = [f'{imports_dir}/train_features_{i}.jsonl' for i in range(1, 6)]
     metadata_columns = ['sha256', 'md5', 'appeared', 'label', 'avclass']
     # run through the files and create the dataframe (with tqdm for progress)
-    for i in tqdm(range(len(files))):
+    for i in range(len(files)):
+        print(f'Processing file: train_features_{i+1}.jsonl')
         df = pd.read_json(files[i], lines=True)
         # flatten general data, and save the dataframe with the metadata
-        df_general = pd.concat([df.drop(['general'], axis=1)[metadata_columns], df['general'].apply(pd.Series)], axis=1)
+        print('Extracting general data...')
+        df_general = pd.concat([df.drop(['general'], axis=1)[metadata_columns], df['general'].progress_apply(pd.Series)], axis=1)
         # flatten strings data
-        df_strings = pd.concat([df_general, df['strings'].apply(pd.Series)], axis=1)
+        print('Extracting strings data...')
+        df_strings = pd.concat([df_general, df['strings'].progress_apply(pd.Series)], axis=1)
         # remove printabledist column
         df_strings = df_strings.drop(['printabledist'], axis=1)
         # save dataframe to parquet
