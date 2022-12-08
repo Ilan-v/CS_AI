@@ -3,3 +3,4 @@ HW1/data/
 .idea/
 HW1/ember/__pycache__/
 *.pyc
+HW1/ vt_api_key.py
