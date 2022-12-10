@@ -26,6 +26,7 @@ def get_remaning_daily_quota(api_key):
 
 def create_batches(start_index, df_size):
     num_avilable_requests = get_remaning_daily_quota(api_key)
+    print(f"number of avilable requests: {num_avilable_requests}")
     num_requests = 0 
     batches = []
     while num_requests < num_avilable_requests and start_index < df_size:
@@ -41,17 +42,17 @@ def add_files(dir: str, api_key: str, dataset_name: str):
     get more files from virustotal
     """
     df_path = os.path.join(dir,f'{dataset_name}_file_status.csv')
-    json_path = os.path.join(dir,f'{dataset_name}_file_data.json')
-    
     status_df = pd.read_csv(df_path)
-    with open(json_path, 'r') as f:
-        data_dic = json.load(f)
     # index of the first file to be added
     start_index = status_df[status_df['status_code'] == 0].index[0]
+    # number of new file
+    new_file_number = int(int(status_df['file_number'].max())) + 1
     # create batches
     batches = create_batches(start_index, len(status_df))
     # loop over the batches
     for b in range(len(batches)):
+        # initalize data dictionary
+        data_dic = {}
         for idx in tqdm(batches[b], desc = f"batch {b}"):
             sha256 = status_df.loc[idx, 'sha256']
             # get response
@@ -64,14 +65,21 @@ def add_files(dir: str, api_key: str, dataset_name: str):
             # update status and timestamp
             status_df.loc[idx, 'timestamp'] = pd.Timestamp.now()
             status_df.loc[idx, 'status_code'] = response.status_code
+            status_df.loc[idx, 'file_number'] = new_file_number
             # save response json
             data_dic[sha256] = response.json()
 
         # save progress
+        print(f"started writing data at {pd.Timestamp.now()}")
+        start = time.time()
         status_df.to_csv(df_path, index=False)
+        # save data 
+        json_path = os.path.join(dir,f'{dataset_name}_file_data_{new_file_number}.json')
         with open(json_path, 'w') as f:
                 json.dump(data_dic, f)
-
+        finish = time.time()
+        write_time = round(finish - start, 2)
+        print(f"finished writing data after {write_time} seconds")
 # different paths
 dir_path = os.path.dirname(os.path.realpath(__file__))
 data_path = os.path.join(dir_path,'data')
