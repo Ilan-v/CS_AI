@@ -46,11 +46,12 @@ def add_files(dir: str, api_key: str, dataset_name: str):
     # index of the first file to be added
     start_index = status_df[status_df['status_code'] == 0].index[0]
     # number of new file
-    new_file_number = int(int(status_df['file_number'].max())) + 1
+    new_file_number = int(int(status_df['file_number'].max())) 
     # create batches
     batches = create_batches(start_index, len(status_df))
     # loop over the batches
     for b in range(len(batches)):
+        new_file_number += 1
         # initalize data dictionary
         data_dic = {}
         for idx in tqdm(batches[b], desc = f"batch {b}"):
