@@ -68,7 +68,8 @@ def add_files(dir: str, api_key: str, dataset_name: str):
             status_df.loc[idx, 'status_code'] = response.status_code
             status_df.loc[idx, 'file_number'] = new_file_number
             # save response json
-            data_dic[sha256] = response.json()
+            if response.status_code == 200:
+                data_dic[sha256] = response.json()
 
         # save progress
         print(f"started writing data at {pd.Timestamp.now()}")
