@@ -76,7 +76,8 @@ def add_files(dir: str, api_key: str, dataset_name: str):
         start = time.time()
         status_df.to_csv(df_path, index=False)
         # save data 
-        json_path = os.path.join(dir,f'{dataset_name}_file_data_{new_file_number}.json')
+        data_dir = os.path.join(dir, dataset_name)
+        json_path = os.path.join(data_dir,f'{dataset_name}_file_data_{new_file_number}.json')
         with open(json_path, 'w') as f:
                 json.dump(data_dic, f)
         finish = time.time()
@@ -89,4 +90,4 @@ processed_path = os.path.join(data_path,'processed')
 virustotal_path = os.path.join(data_path,'virustotal')
 
 if __name__ == '__main__':
-    add_files(virustotal_path, api_key, dataset_name='train')
+    add_files(virustotal_path, api_key, dataset_name='test')
